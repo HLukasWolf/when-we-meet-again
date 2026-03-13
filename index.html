@@ -106,7 +106,7 @@
 
     .progress-header {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
       gap: 16px;
       margin-bottom: 10px;
@@ -187,8 +187,7 @@
     <p class="message" id="message">Jede Sekunde bringt uns näher zusammen.</p>
 
     <div class="progress-header">
-  <span id="last-date-label">Letztes Treffen: —</span>
-  <span id="next-date-label">Nächstes Treffen: —</span>
+  <span id="progress-label">Schon geschafft:</span>
 </div>
 
       <div class="progress-bar">
@@ -210,9 +209,6 @@
     const secondsEl = document.getElementById("seconds");
     const targetDateEl = document.getElementById("target-date");
     const messageEl = document.getElementById("message");
-
-    const lastDateLabel = document.getElementById("last-date-label");
-    const nextDateLabel = document.getElementById("next-date-label");
     const progressFill = document.getElementById("progress-fill");
     const progressText = document.getElementById("progress-text");
 
@@ -223,8 +219,6 @@
       });
     }
 
-    lastDateLabel.textContent = "Letztes Treffen: " + formatDate(lastMeetingDate);
-    nextDateLabel.textContent = "Nächstes Treffen: " + formatDate(nextMeetingDate);
     targetDateEl.textContent = "Nächstes Treffen: " + formatDate(nextMeetingDate);
 
     function updateCountdown() {
