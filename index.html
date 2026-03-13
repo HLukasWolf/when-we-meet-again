@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bis wir uns wiedersehen</title>
+  <style>
+    :root {
+      --bg1: #0f172a;
+      --bg2: #1e293b;
+      --card: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --accent: #f472b6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 700px;
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 32px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.1rem;
+      margin-bottom: 32px;
+    }
+
+    .countdown {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .time-box {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 20px 10px;
+    }
+
+    .number {
+      display: block;
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    .label {
+      display: block;
+      margin-top: 8px;
+      font-size: 0.95rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .date {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .message {
+      margin-top: 24px;
+      font-size: 1.1rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+      .countdown {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+
+      .number {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Bis wir uns wiedersehen ❤️</h1>
+    <p class="subtitle">Countdown bis zu unserem nächsten Treffen</p>
+
+    <div class="countdown">
+      <div class="time-box">
+        <span class="number" id="days">0</span>
+        <span class="label">Tage</span>
+      </div>
+      <div class="time-box">
+        <span class="number" id="hours">0</span>
+        <span class="label">Stunden</span>
+      </div>
+      <div class="time-box">
+        <span class="number" id="minutes">0</span>
+        <span class="label">Minuten</span>
+      </div>
+      <div class="time-box">
+        <span class="number" id="seconds">0</span>
+        <span class="label">Sekunden</span>
+      </div>
+    </div>
+
+    <p class="date" id="target-date"></p>
+    <p class="message" id="message">Jede Sekunde bringt uns näher zusammen.</p>
+  </div>
+
+  <script>
+    // HIER DATUM UND UHRZEIT ANPASSEN:
+    const targetDate = new Date("2026-03-27T05:20:00");
+
+    const daysEl = document.getElementById("days");
+    const hoursEl = document.getElementById("hours");
+    const minutesEl = document.getElementById("minutes");
+    const secondsEl = document.getElementById("seconds");
+    const targetDateEl = document.getElementById("target-date");
+    const messageEl = document.getElementById("message");
+
+    targetDateEl.textContent =
+      "Nächstes Treffen: " +
+      targetDate.toLocaleString("de-DE", {
+        dateStyle: "full",
+        timeStyle: "short"
+      });
+
+    function updateCountdown() {
+      const now = new Date();
+      const diff = targetDate - now;
+
+      if (diff <= 0) {
+        daysEl.textContent = "0";
+        hoursEl.textContent = "0";
+        minutesEl.textContent = "0";
+        secondsEl.textContent = "0";
+        messageEl.textContent = "Endlich ist es so weit 💖";
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      daysEl.textContent = days;
+      hoursEl.textContent = hours;
+      minutesEl.textContent = minutes;
+      secondsEl.textContent = seconds;
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>
