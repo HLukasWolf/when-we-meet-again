@@ -132,11 +132,25 @@
       transition: width 0.8s ease;
     }
 
+    .distance-section {
+      margin-top: 26px;
+      text-align: left;
+    }
+
+    .distance-scale {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
     .progress-text {
       margin-top: 10px;
       text-align: center;
       color: var(--muted);
       font-size: 0.95rem;
+      line-height: 1.45;
     }
 
     @media (max-width: 600px) {
@@ -186,9 +200,10 @@
     <p class="date" id="target-date"></p>
     <p class="message" id="message">Jede Sekunde bringt uns näher zusammen.</p>
 
-    <div class="progress-header">
-  <span id="progress-label">Schon geschafft:</span>
-</div>
+    <div class="progress-section">
+      <div class="progress-header">
+        <span id="progress-label">Schon geschafft:</span>
+      </div>
 
       <div class="progress-bar">
         <div class="progress-fill" id="progress-fill"></div>
@@ -196,12 +211,51 @@
 
       <p class="progress-text" id="progress-text">0% geschafft</p>
     </div>
+
+    <div class="distance-section">
+      <div class="progress-header">
+        <span>Aktuelle Distanz zueinander</span>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="distance-fill"></div>
+      </div>
+
+      <div class="distance-scale">
+        <span>Kassel</span>
+        <span>Wien</span>
+      </div>
+
+      <p class="progress-text" id="distance-text">0 km Abstand</p>
+    </div>
   </div>
 
   <script>
     // HIER ANPASSEN:
     const lastMeetingDate = new Date("2026-03-07T14:12:00");
     const nextMeetingDate = new Date("2026-03-27T05:20:00");
+    const maxDistanceKm = 605;
+
+    // Messpunkte aus der Tabelle (Luftlinie).
+    // Zwischen zwei Punkten wird die Distanz linear interpoliert.
+    const distanceTimeline = [
+      { city: "Wien", time: new Date("2026-02-28T00:00:00"), distance: 602.53 },
+      { city: "Wien", time: new Date("2026-03-26T19:44:00"), distance: 602.53 },
+      { city: "St. Pölten", time: new Date("2026-03-26T20:10:00"), distance: 559.70 },
+      { city: "St. Pölten", time: new Date("2026-03-26T20:12:00"), distance: 559.71 },
+      { city: "Linz", time: new Date("2026-03-26T21:00:00"), distance: 479.75 },
+      { city: "Linz", time: new Date("2026-03-26T21:04:00"), distance: 479.75 },
+      { city: "Passau", time: new Date("2026-03-26T22:06:00"), distance: 415.78 },
+      { city: "Passau", time: new Date("2026-03-26T22:27:00"), distance: 415.78 },
+      { city: "Regensburg", time: new Date("2026-03-26T23:37:00"), distance: 316.29 },
+      { city: "Regensburg", time: new Date("2026-03-26T23:39:00"), distance: 316.29 },
+      { city: "Nürnberg", time: new Date("2026-03-27T01:09:00"), distance: 235.74 },
+      { city: "Nürnberg", time: new Date("2026-03-27T01:54:00"), distance: 235.74 },
+      { city: "Würzburg", time: new Date("2026-03-27T03:10:00"), distance: 172.52 },
+      { city: "Würzburg", time: new Date("2026-03-27T03:12:00"), distance: 172.52 },
+      { city: "Kassel", time: new Date("2026-03-27T05:20:00"), distance: 0.0 },
+      { city: "Kassel", time: new Date("2026-04-05T23:59:00"), distance: 0.0 }
+    ];
 
     const daysEl = document.getElementById("days");
     const hoursEl = document.getElementById("hours");
@@ -211,12 +265,51 @@
     const messageEl = document.getElementById("message");
     const progressFill = document.getElementById("progress-fill");
     const progressText = document.getElementById("progress-text");
+    const distanceFill = document.getElementById("distance-fill");
+    const distanceText = document.getElementById("distance-text");
 
     function formatDate(date) {
       return date.toLocaleString("de-DE", {
         dateStyle: "full",
         timeStyle: "short"
       });
+    }
+
+    function formatDistance(distance) {
+      return distance.toLocaleString("de-DE", {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+      });
+    }
+
+    function getCurrentDistance(now) {
+      if (now <= distanceTimeline[0].time) {
+        return { distance: distanceTimeline[0].distance, city: distanceTimeline[0].city };
+      }
+
+      const lastPoint = distanceTimeline[distanceTimeline.length - 1];
+      if (now >= lastPoint.time) {
+        return { distance: lastPoint.distance, city: lastPoint.city };
+      }
+
+      for (let i = 0; i < distanceTimeline.length - 1; i++) {
+        const start = distanceTimeline[i];
+        const end = distanceTimeline[i + 1];
+
+        if (now >= start.time && now <= end.time) {
+          const segmentDuration = end.time - start.time;
+
+          if (segmentDuration === 0) {
+            return { distance: end.distance, city: end.city };
+          }
+
+          const progress = (now - start.time) / segmentDuration;
+          const distance = start.distance + (end.distance - start.distance) * progress;
+          return { distance, city: start.city === end.city ? start.city : `${start.city} → ${end.city}` };
+        }
+      }
+
+      return { distance: lastPoint.distance, city: lastPoint.city };
     }
 
     targetDateEl.textContent = "Nächstes Treffen: " + formatDate(nextMeetingDate);
@@ -230,7 +323,7 @@
         hoursEl.textContent = "0";
         minutesEl.textContent = "0";
         secondsEl.textContent = "0";
-        messageEl.textContent = "Endlich ist es so weit 💙";
+        messageEl.textContent = "Endlich ist es so weit ❤️";
       } else {
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
@@ -243,12 +336,11 @@
         secondsEl.textContent = seconds;
       }
 
-      updateProgress();
+      updateProgress(now);
+      updateDistance(now);
     }
 
-    function updateProgress() {
-      const now = new Date();
-
+    function updateProgress(now) {
       const total = nextMeetingDate - lastMeetingDate;
       const elapsed = now - lastMeetingDate;
 
@@ -259,6 +351,15 @@
 
       progressFill.style.width = progress.toFixed(1) + "%";
       progressText.textContent = progress.toFixed(1) + "% des Wartens geschafft";
+    }
+
+    function updateDistance(now) {
+      const current = getCurrentDistance(now);
+      const clampedDistance = Math.max(0, Math.min(maxDistanceKm, current.distance));
+      const widthPercent = (clampedDistance / maxDistanceKm) * 100;
+
+      distanceFill.style.width = widthPercent.toFixed(2) + "%";
+      distanceText.textContent = `${formatDistance(clampedDistance)} km Abstand`;
     }
 
     updateCountdown();
